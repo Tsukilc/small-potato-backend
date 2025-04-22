@@ -1,0 +1,50 @@
+dubbo:
+  application:
+    logger: slf4j
+    name: userService
+    qos-enable: false
+    check-serializable: false
+  registry:
+    address: nacos://${nacos.address:localhost}:8848?username=nacos&password=nacos
+  protocol:
+    port: 20882
+    name: tri
+
+# ????
+logging:
+  file:
+    # ???????
+    path: ./logs
+    # ??????
+    log-name: ${dubbo.application.name}
+    # ????????
+    days: 3
+  level:
+    ROOT: info
+    # com.xhs ???  
+    com.xhs: info
+  consumer:
+    check: false
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${mysql.address:localhost}:3306/small_potato_user?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# MyBatis-Plus配置
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: assign_id
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+server:
+  port: 8081
