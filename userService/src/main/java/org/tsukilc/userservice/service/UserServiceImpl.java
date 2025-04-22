@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.tsukilc.api.user.UserService;
 import org.tsukilc.api.user.dto.LoginRequest;
@@ -23,15 +24,17 @@ import java.util.*;
 
 @DubboService
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserMapper userMapper;
-    private final UserFollowMapper userFollowMapper;
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private UserFollowMapper userFollowMapper;
     
     // 模拟生成token，实际应当使用JWT等方式
-    private String generateToken(User user) {
-        return "mock_token_" + user.getId() + "_" + System.currentTimeMillis();
+    private String generateToken(String userId) {
+        return "mock_token_" + userId + "_" + System.currentTimeMillis();
     }
     
     // 模拟从token获取用户ID
@@ -58,7 +61,7 @@ public class UserServiceImpl implements UserService {
         // 生成token并返回用户信息
         UserDTO userDTO = new UserDTO();
         BeanUtils.copyProperties(user, userDTO);
-        userDTO.setToken(generateToken(user));
+        userDTO.setToken(generateToken(userDTO.getId()));
         
         // 补充统计数据（mock数据）
         userDTO.setFollowing(10);
@@ -99,7 +102,7 @@ public class UserServiceImpl implements UserService {
         // 返回用户信息
         UserDTO userDTO = new UserDTO();
         BeanUtils.copyProperties(user, userDTO);
-        userDTO.setToken(generateToken(user));
+        userDTO.setToken(generateToken(user.getId()));
         
         // 新用户统计数据初始化
         userDTO.setFollowing(0);
@@ -114,7 +117,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<UserDTO> getCurrentUser() {
         try {
-            String userId = getUserIdFromToken(token);
+            String userId = "1";
             User user = userMapper.selectById(userId);
             if (user == null) {
                 return Result.error(404, "用户不存在");
@@ -161,7 +164,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Void> followUser(String userId) {
         try {
-            String currentUserId = getUserIdFromToken(token);
+            String currentUserId = getUserIdFromToken(generateToken(userId));
             
             // 检查目标用户是否存在
             User targetUser = userMapper.selectById(userId);
@@ -202,7 +205,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Void> unfollowUser(String userId) {
         try {
-            String currentUserId = getUserIdFromToken(token);
+            String currentUserId = getUserIdFromToken(userId);
             
             // 删除关注记录
             LambdaQueryWrapper<UserFollow> queryWrapper = new LambdaQueryWrapper<>();

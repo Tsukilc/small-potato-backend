@@ -14,12 +14,13 @@
         <module>interactionService</module>
         <module>searchService</module>
         <module>fileService</module>
-        <module>messageService</module>
-        <module>recommendService</module>
-        <module>contentSecurityService</module>
-        <module>adminService</module>
         <module>common</module>
-        <module>gatewayService</module>
+<!--        <module>messageService</module>-->
+<!--        <module>recommendService</module>-->
+<!--        <module>contentSecurityService</module>-->
+<!--        <module>adminService</module>-->
+
+<!--        <module>gatewayService</module>-->
     </modules>
 
     <properties>
@@ -29,7 +30,7 @@
 
         <dubbo.version>3.3.1</dubbo.version>
         <spring-boot.version>3.2.3</spring-boot.version>
-        <mybatis-plus.version>3.5.5</mybatis-plus.version>
+        <mybatis-plus.version>3.5.6</mybatis-plus.version>
         <mysql.version>8.0.33</mysql.version>
         <lombok.version>1.18.30</lombok.version>
         <hutool.version>5.8.25</hutool.version>
@@ -61,9 +62,10 @@
                 <artifactId>apm-toolkit-logback-1.x</artifactId>
                 <version>9.3.0</version>
             </dependency>
+
             <dependency>
                 <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
             <dependency>
@@ -99,6 +101,14 @@
                         </execution>
                     </executions>
                 </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
             </plugins>
         </pluginManagement>
     </build>

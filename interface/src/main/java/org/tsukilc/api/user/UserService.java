@@ -1,65 +1,76 @@
 package org.tsukilc.api.user;
 
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.web.bind.annotation.*;
 import org.tsukilc.api.user.dto.LoginRequest;
 import org.tsukilc.api.user.dto.RegisterRequest;
 import org.tsukilc.api.user.dto.UserDTO;
+import org.tsukilc.common.core.PageResult;
 import org.tsukilc.common.core.Result;
 
-@DubboService
-@RequestMapping("/api/user")
+import javax.ws.rs.*;
+
+@Path("/api")
 public interface UserService {
 
     /**
      * 用户登录
      */
-    @PostMapping("/login")
+    @POST
+    @Path("/user/login")
     Result<UserDTO> login(@RequestBody LoginRequest request);
 
     /**
      * 用户注册
      */
-    @PostMapping("/register")
+    @POST
+    @Path("/user/register")
     Result<UserDTO> register(@RequestBody RegisterRequest request);
 
     /**
      * 获取当前登录用户信息
      */
-    @GetMapping("/current")
+    @GET
+    @Path("/user/current")
     Result<UserDTO> getCurrentUser();
 
     /**
      * 获取用户信息
      */
-    @GetMapping("/{id}")
-    Result<UserDTO> getUserInfo(@PathVariable("id") String id);
+    @GET
+    @Path("/user/{id}")
+    Result<UserDTO> getUserInfo(@PathParam("id") String id);
 
     /**
      * 关注用户
      */
-    @PostMapping("/follow/{userId}")
-    Result<Void> followUser(@PathVariable("userId") String userId);
+    @POST
+    @Path("/user/follow/{userId}")
+    Result<Void> followUser(@PathParam("userId") String userId);
 
     /**
      * 取消关注
      */
-    @PostMapping("/unfollow/{userId}")
-    Result<Void> unfollowUser(@PathVariable("userId") String userId);
+    @POST
+    @Path("/user/unfollow/{userId}")
+    Result<Void> unfollowUser(@PathParam("userId") String userId);
 
     /**
      * 获取用户关注列表
      */
-    @GetMapping("/{userId}/followings")
-    Result<UserDTO> getUserFollowings(@PathVariable("userId") String userId, 
-                                     @RequestParam(defaultValue = "1") Integer page,
-                                     @RequestParam(defaultValue = "20") Integer pageSize);
+    @GET
+    @Path("/user/{userId}/followings")
+    Result<PageResult<UserDTO>> getUserFollowings(
+            @PathParam("userId") String userId,
+            @QueryParam("page") @DefaultValue("1") Integer page,
+            @QueryParam("pageSize") @DefaultValue("20") Integer pageSize);
 
     /**
      * 获取用户粉丝列表
      */
-    @GetMapping("/{userId}/followers")
-    Result<UserDTO> getUserFollowers(@PathVariable("userId") String userId, 
-                                    @RequestParam(defaultValue = "1") Integer page,
-                                    @RequestParam(defaultValue = "20") Integer pageSize);
-} 
+    @GET
+    @Path("/user/{userId}/followers")
+    Result<PageResult<UserDTO>> getUserFollowers(
+            @PathParam("userId") String userId,
+            @QueryParam("page") @DefaultValue("1") Integer page,
+            @QueryParam("pageSize") @DefaultValue("20") Integer pageSize);
+}
