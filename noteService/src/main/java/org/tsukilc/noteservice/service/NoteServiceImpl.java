@@ -2,6 +2,7 @@ package org.tsukilc.noteservice.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,8 @@ import org.springframework.util.StringUtils;
 import org.tsukilc.api.note.NoteService;
 import org.tsukilc.api.note.dto.CreateNoteRequest;
 import org.tsukilc.api.note.dto.NoteDTO;
+import org.tsukilc.api.user.UserService;
+import org.tsukilc.api.user.dto.UserDTO;
 import org.tsukilc.common.core.PageResult;
 import org.tsukilc.common.core.Result;
 import org.tsukilc.common.exception.BusinessException;
@@ -38,6 +41,9 @@ public class NoteServiceImpl implements NoteService {
     
     @Autowired
     private NoteImageMapper noteImageMapper;
+
+    @DubboReference
+    private UserService userService;
     
     @Autowired
     private NoteTagMapper noteTagMapper;
@@ -284,18 +290,22 @@ public class NoteServiceImpl implements NoteService {
         } else {
             noteDTO.setImages(new ArrayList<>());
         }
-        
+
+        Result<UserDTO> userDTO = userService.getUserInfo(String.valueOf(note.getUserId()));
+        if (userDTO.isSuccess()) {
+            noteDTO.setUsername(userDTO.getData().getUsername());
+            noteDTO.setAvatar(userDTO.getData().getAvatar());
+        } else {
+            throw new BusinessException("获取用户信息失败");
+        }
+
         // 查询笔记的标签
         List<String> tags = getTagsByNoteId(note.getId());
         noteDTO.setTags(tags);
         
-        // TODO: 设置用户名、头像等信息，需要调用用户服务获取
-        noteDTO.setUsername("用户昵称");
-        
         // 获取头像临时访问URL
-        String avatarUrl = "https://static-cse.canva.cn/blob/239388/e1604019539295.jpg";
-        // 如果头像是存储在MinIO中的，也需要获取临时访问URL
-        // avatarUrl = fileServiceClient.getFileAccessUrl(avatarUrl);
+        String avatarPath = userDTO.getData().getAvatar();
+        String avatarUrl = fileServiceClient.getFileAccessUrl(avatarPath);
         noteDTO.setAvatar(avatarUrl);
         
         // TODO: 设置是否点赞、收藏等状态，需要调用交互服务获取
