@@ -45,6 +45,9 @@ public class FileServiceImpl implements FileService {
     
     @Value("${s3.public-endpoint}")
     private String publicEndpoint;
+    
+    @Value("${s3.access-url-expiration:3600}")
+    private long accessUrlExpirationSeconds;
 
     @Override
     public Result<UploadUrlResponse> getUploadUrl(UploadUrlRequest request) {
@@ -102,10 +105,10 @@ public class FileServiceImpl implements FileService {
             fileInfo.setFileName(params.getOriginalFileName());
             fileInfo.setUserId(UserDetail.getUserId());
             fileInfo.setUrl(params.getFileUrl());
-            fileInfo.setPath(params.getFileUrl());
+            fileInfo.setPath(params.getFilePath());  // 保存文件路径，用于后续获取临时URL
             fileInfo.setSize(params.getFileSize());
             fileInfo.setType(params.getFileType());
-            fileInfo.setFileType(params.getFileType());
+            fileInfo.setFileType(params.getCategory());
             fileInfo.setExtension(extractExtension(params.getOriginalFileName()));
             fileInfo.setCreatedAt(LocalDateTime.now());
             
@@ -119,6 +122,35 @@ public class FileServiceImpl implements FileService {
             return Result.success(result);
         } catch (Exception e) {
             return Result.fail("文件上传回调处理失败: " + e.getMessage());
+        }
+    }
+    
+    @Override
+    public Result<String> getFileAccessUrl(String filePath) {
+        try {
+            if (filePath == null || filePath.trim().isEmpty()) {
+                return Result.fail("文件路径不能为空");
+            }
+            
+            // 创建用于获取对象的请求
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filePath)
+                    .build();
+            
+            // 创建预签名请求，设置有效期
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofSeconds(accessUrlExpirationSeconds))
+                    .getObjectRequest(getObjectRequest)
+                    .build();
+            
+            // 获取预签名URL
+            PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+            String presignedUrl = presignedRequest.url().toString();
+            
+            return Result.success(presignedUrl);
+        } catch (Exception e) {
+            return Result.fail("获取文件访问URL失败: " + e.getMessage());
         }
     }
     
@@ -144,7 +176,6 @@ public class FileServiceImpl implements FileService {
         
         return String.format("%s/%s%s", category, uuid, extension);
     }
-
     
     /**
      * 从文件名中提取扩展名

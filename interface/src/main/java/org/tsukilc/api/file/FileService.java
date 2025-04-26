@@ -29,4 +29,12 @@ public interface FileService {
      */
     @PostMapping("upload/callback")
     Result<FileUploadResult> uploadCallback(@RequestBody UploadCallbackParams params);
+    
+    /**
+     * 获取文件访问的临时URL
+     * @param filePath 文件路径
+     * @return 临时访问URL
+     */
+    @GetMapping("get-access-url")
+    Result<String> getFileAccessUrl(@RequestParam String filePath);
 } 

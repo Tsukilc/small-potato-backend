@@ -15,6 +15,8 @@ public class NoteImage {
     private String id;
     
     private String noteId;
+
+    private String path;
     
     private String url;
     

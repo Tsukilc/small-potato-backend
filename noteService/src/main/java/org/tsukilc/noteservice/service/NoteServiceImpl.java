@@ -14,6 +14,7 @@ import org.tsukilc.common.core.PageResult;
 import org.tsukilc.common.core.Result;
 import org.tsukilc.common.exception.BusinessException;
 import org.tsukilc.common.util.UserDetail;
+import org.tsukilc.noteservice.client.FileServiceClient;
 import org.tsukilc.noteservice.entity.Note;
 import org.tsukilc.noteservice.entity.NoteImage;
 import org.tsukilc.noteservice.entity.NoteTag;
@@ -43,6 +44,9 @@ public class NoteServiceImpl implements NoteService {
     
     @Autowired
     private TagMapper tagMapper;
+    
+    @Autowired
+    private FileServiceClient fileServiceClient;
 
     @Override
     public Result<PageResult<NoteDTO>> getNotes(Integer page, Integer pageSize, String userId, String tag, String keyword) {
@@ -266,14 +270,15 @@ public class NoteServiceImpl implements NoteService {
         noteDTO.setCreatedAt(note.getCreatedAt());
         noteDTO.setUpdatedAt(note.getUpdatedAt());
         
-        // 查询笔记的图片
+        // 查询笔记的图片 todo:应该改成用fileid去查的，如果之后很麻烦就改吧
         LambdaQueryWrapper<NoteImage> imageQueryWrapper = new LambdaQueryWrapper<>();
         imageQueryWrapper.eq(NoteImage::getNoteId, note.getId());
         imageQueryWrapper.orderByAsc(NoteImage::getOrderNum);
         List<NoteImage> noteImages = noteImageMapper.selectList(imageQueryWrapper);
         if (noteImages != null && !noteImages.isEmpty()) {
             List<String> imageUrls = noteImages.stream()
-                    .map(NoteImage::getUrl)
+                    .map(NoteImage::getPath)
+                    .map(fileServiceClient::getFileAccessUrl) // 获取临时访问URL
                     .collect(Collectors.toList());
             noteDTO.setImages(imageUrls);
         } else {
@@ -286,7 +291,12 @@ public class NoteServiceImpl implements NoteService {
         
         // TODO: 设置用户名、头像等信息，需要调用用户服务获取
         noteDTO.setUsername("用户昵称");
-        noteDTO.setAvatar("https://static-cse.canva.cn/blob/239388/e1604019539295.jpg");
+        
+        // 获取头像临时访问URL
+        String avatarUrl = "https://static-cse.canva.cn/blob/239388/e1604019539295.jpg";
+        // 如果头像是存储在MinIO中的，也需要获取临时访问URL
+        // avatarUrl = fileServiceClient.getFileAccessUrl(avatarUrl);
+        noteDTO.setAvatar(avatarUrl);
         
         // TODO: 设置是否点赞、收藏等状态，需要调用交互服务获取
         noteDTO.setIsLiked(false);

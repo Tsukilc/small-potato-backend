@@ -28,6 +28,10 @@ public class Result<T> implements Serializable {
         return result;
     }
 
+    public boolean isSuccess() {
+        return this.code != null && this.code == 200;
+    }
+
     public static <T> Result<T> fail(String message) {
         return error(500, message);
     }
