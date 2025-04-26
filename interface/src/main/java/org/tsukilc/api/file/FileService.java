@@ -1,36 +1,32 @@
 package org.tsukilc.api.file;
 
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.tsukilc.api.file.dto.FileUploadResult;
+import org.tsukilc.api.file.dto.UploadCallbackParams;
+import org.tsukilc.api.file.dto.UploadUrlRequest;
+import org.tsukilc.api.file.dto.UploadUrlResponse;
 import org.tsukilc.common.core.Result;
 
-@DubboService
-@RequestMapping("/api/upload")
+/**
+ * 文件服务接口
+ */
+@RequestMapping("/api/file")
 public interface FileService {
     
     /**
-     * 上传笔记图片
+     * 获取文件上传URL (预签名URL)
+     * @param request 上传文件信息请求
+     * @return 预签名URL响应
      */
-    @PostMapping("/note-image")
-    Result<FileUploadResult> uploadNoteImage(
-            @RequestParam("file") MultipartFile file
-);
+    @PostMapping("upload/get-url")
+    Result<UploadUrlResponse> getUploadUrl(@RequestBody UploadUrlRequest request);
     
     /**
-     * 上传用户头像
+     * 上传完成回调
+     * @param params 上传回调参数
+     * @return 处理结果
      */
-    @PostMapping("/avatar")
-    Result<FileUploadResult> uploadAvatar(
-            @RequestParam("file") MultipartFile file
-);
-    
-    /**
-     * 上传视频
-     */
-    @PostMapping("/video")
-    Result<FileUploadResult> uploadVideo(
-            @RequestParam("file") MultipartFile file
-);
+    @PostMapping("upload/callback")
+    Result<FileUploadResult> uploadCallback(@RequestBody UploadCallbackParams params);
 } 

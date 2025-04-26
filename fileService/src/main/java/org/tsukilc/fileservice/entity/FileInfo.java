@@ -1,6 +1,7 @@
 package org.tsukilc.fileservice.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -31,7 +32,7 @@ public class FileInfo {
     private String md5;
     
     private String userId;
-    
+
     private String fileType; // NOTE_IMAGE, AVATAR, VIDEO
     
     private LocalDateTime createdAt;

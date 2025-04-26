@@ -20,11 +20,11 @@ public class Note {
     
     private String userId;
     
-    private Integer likeCount;
+    private Integer likeCount = 0;
     
-    private Integer commentCount;
+    private Integer commentCount = 0;
     
-    private Integer collectCount;
+    private Integer collectCount = 0;
     
     private LocalDateTime createdAt;
     

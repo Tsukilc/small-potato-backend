@@ -151,7 +151,6 @@ CREATE TABLE IF NOT EXISTS t_file_info (
     size BIGINT NOT NULL COMMENT '文件大小(字节)',
     type VARCHAR(100) NOT NULL COMMENT '文件类型',
     extension VARCHAR(20) DEFAULT NULL COMMENT '文件扩展名',
-    md5 VARCHAR(32) NOT NULL COMMENT '文件MD5',
     user_id VARCHAR(32) NOT NULL COMMENT '上传用户ID',
     file_type VARCHAR(20) NOT NULL COMMENT '文件用途：NOTE_IMAGE/AVATAR/VIDEO',
     created_at DATETIME NOT NULL COMMENT '创建时间',

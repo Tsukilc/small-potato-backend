@@ -4,83 +4,159 @@ import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.tsukilc.api.file.FileService;
 import org.tsukilc.api.file.dto.FileUploadResult;
+import org.tsukilc.api.file.dto.UploadCallbackParams;
+import org.tsukilc.api.file.dto.UploadUrlRequest;
+import org.tsukilc.api.file.dto.UploadUrlResponse;
 import org.tsukilc.common.core.Result;
 import org.tsukilc.common.exception.BusinessException;
+import org.tsukilc.common.util.UserDetail;
 import org.tsukilc.fileservice.entity.FileInfo;
 import org.tsukilc.fileservice.mapper.FileInfoMapper;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * 文件服务实现
+ */
 @DubboService
 @Service
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
 
+    private final S3Presigner s3Presigner;
     private final FileInfoMapper fileInfoMapper;
+
+    @Value("${s3.bucket}")
+    private String bucketName;
     
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    @Value("${s3.url-expiration:600}")
+    private long urlExpirationSeconds;
     
-    @Value("${file.cdn-domain}")
-    private String cdnDomain;
+    @Value("${s3.public-endpoint}")
+    private String publicEndpoint;
 
     @Override
-    public Result<FileUploadResult> uploadNoteImage(MultipartFile file) {
-        // 模拟上传实现，返回假URL
-        FileUploadResult result = new FileUploadResult();
-        result.setUrl(cdnDomain + "/images/" + UUID.randomUUID() + ".jpg");
-        return Result.success(result);
-    }
+    public Result<UploadUrlResponse> getUploadUrl(UploadUrlRequest request) {
+        try {
+            // 验证请求参数
+            if (request.getFileName() == null || request.getFileType() == null || request.getFileSize() == null) {
+                throw new BusinessException("文件信息不完整");
+            }
+            
+            // 生成唯一文件路径
+            String fileKey = generateFileKey(request);
 
-    @Override
-    public Result<FileUploadResult> uploadAvatar(MultipartFile file) {
-        // 模拟上传实现，返回假URL
-        FileUploadResult result = new FileUploadResult();
-        result.setUrl(cdnDomain + "/avatars/" + UUID.randomUUID() + ".jpg");
-        return Result.success(result);
-    }
+            // 创建PUT预签名请求（而不是GET请求）
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileKey)
+                    .contentType(request.getFileType())
+                    .build();
 
-    @Override
-    public Result<FileUploadResult> uploadVideo(MultipartFile file) {
-        // 模拟上传实现，返回假URL
-        FileUploadResult result = new FileUploadResult();
-        result.setUrl(cdnDomain + "/videos/" + UUID.randomUUID() + ".mp4");
-        return Result.success(result);
+            PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofSeconds(urlExpirationSeconds))
+                    .putObjectRequest(putObjectRequest)
+                    .build();
+
+            // 获取预签名URL
+            PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
+            String presignedUrl = presignedRequest.url().toString();
+
+            // 构建响应
+            UploadUrlResponse response = new UploadUrlResponse();
+            response.setUploadUrl(presignedUrl);
+            response.setFileUrl(String.format("%s/%s/%s", publicEndpoint, bucketName, fileKey));
+            response.setFilePath(fileKey);
+            response.setExpiresIn(urlExpirationSeconds);
+            
+            return Result.success(response);
+        } catch (BusinessException e) {
+            return Result.fail(e.getMessage());
+        } catch (Exception e) {
+            return Result.fail("获取上传URL失败: " + e.getMessage());
+        }
     }
     
-    // 模拟保存文件信息
-    private FileInfo saveFileInfo(MultipartFile file, String url, String fileType, String userId) {
-        FileInfo fileInfo = new FileInfo();
-        fileInfo.setOriginalName(file.getOriginalFilename());
-        fileInfo.setFileName(UUID.randomUUID().toString());
-        fileInfo.setUrl(url);
-        fileInfo.setPath(uploadDir + "/" + fileInfo.getFileName());
-        fileInfo.setSize(file.getSize());
-        fileInfo.setType(file.getContentType());
-        fileInfo.setExtension(getFileExtension(file.getOriginalFilename()));
-        fileInfo.setMd5("mock_md5");
-        fileInfo.setUserId(userId);
-        fileInfo.setFileType(fileType);
-        fileInfo.setCreatedAt(LocalDateTime.now());
+    @Override
+    public Result<FileUploadResult> uploadCallback(UploadCallbackParams params) {
+        try {
+            // 验证参数
+            if (params.getFileUrl() == null) {
+                return Result.fail("文件路径或URL不能为空");
+            }
+            
+            // 创建文件信息记录
+            FileInfo fileInfo = new FileInfo();
+            fileInfo.setOriginalName(params.getOriginalFileName());
+            fileInfo.setFileName(params.getOriginalFileName());
+            fileInfo.setUserId(UserDetail.getUserId());
+            fileInfo.setUrl(params.getFileUrl());
+            fileInfo.setPath(params.getFileUrl());
+            fileInfo.setSize(params.getFileSize());
+            fileInfo.setType(params.getFileType());
+            fileInfo.setFileType(params.getFileType());
+            fileInfo.setExtension(extractExtension(params.getOriginalFileName()));
+            fileInfo.setCreatedAt(LocalDateTime.now());
+            
+            // 保存文件信息到数据库
+            fileInfoMapper.insert(fileInfo);
+            
+            // 构建响应
+            FileUploadResult result = new FileUploadResult();
+            result.setUrl(params.getFileUrl());
+            
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.fail("文件上传回调处理失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 生成唯一的文件键
+     */
+    private String generateFileKey(UploadUrlRequest request) {
+        String uuid = UUID.randomUUID().toString().replace("-", "");
+        String filename = request.getFileName();
+        String extension = "";
         
-        fileInfoMapper.insert(fileInfo);
+        // 获取文件扩展名
+        int lastDotIndex = filename.lastIndexOf(".");
+        if (lastDotIndex >= 0) {
+            extension = filename.substring(lastDotIndex);
+        }
         
-        return fileInfo;
+        // 确定分类目录
+        String category = request.getCategory();
+        if (category == null || category.trim().isEmpty()) {
+            category = "default";
+        }
+        
+        return String.format("%s/%s%s", category, uuid, extension);
     }
+
     
-    // 获取文件扩展名
-    private String getFileExtension(String fileName) {
+    /**
+     * 从文件名中提取扩展名
+     */
+    private String extractExtension(String fileName) {
         if (fileName == null) {
             return null;
         }
-        int lastDotIndex = fileName.lastIndexOf(".");
-        if (lastDotIndex == -1) {
-            return "";
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex >= 0) {
+            return fileName.substring(lastDotIndex + 1);
         }
-        return fileName.substring(lastDotIndex + 1);
+        return "";
     }
 } 

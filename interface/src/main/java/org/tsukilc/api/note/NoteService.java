@@ -6,82 +6,72 @@ import org.tsukilc.api.note.dto.NoteDTO;
 import org.tsukilc.common.core.PageResult;
 import org.tsukilc.common.core.Result;
 
-import javax.ws.rs.*;
-
-@Path("/api")
+@RequestMapping("/api/notes")
 public interface NoteService {
 
     /**
      * 获取笔记列表
      */
-    @GET
-    @Path("/notes")
+    @GetMapping("")
     Result<PageResult<NoteDTO>> getNotes(
-            @QueryParam("page") Integer page,
-            @QueryParam("pageSize") Integer pageSize,
-            @QueryParam("userId") String userId,
-            @QueryParam("tag") String tag,
-            @QueryParam("keyward") String keyword);
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "pageSize", required = false) Integer pageSize,
+            @RequestParam(value = "userId", required = false) String userId,
+            @RequestParam(value = "tag", required = false) String tag,
+            @RequestParam(value = "keyward", required = false) String keyword);
 
     /**
      * 获取笔记详情
      */
-    @GET
-    @Path("/notes/{id}")
+    @GetMapping("/{getId}")
     Result<NoteDTO> getNoteDetail(
-            @PathParam("id") String id);
+            @PathVariable("getId") String id);
 
     /**
      * 创建笔记
      */
-    @POST
-    @Path("/notes")
+    @PostMapping("")
     Result<NoteDTO> createNote(
             @RequestBody CreateNoteRequest request
-);
+    );
 
     /**
      * 删除笔记
      */
-    @DELETE
-    @Path("/notes/{id}")
+    @DeleteMapping("/{delId}")
     Result<Void> deleteNote(
-            @PathParam("id") String id
-);
+            @PathVariable("delId") String id
+    );
 
     /**
      * 点赞笔记
      */
-    @POST
-    @Path("/notes/{id}/like")
+    @PostMapping("/{id}/like")
     Result<Void> likeNote(
-             @PathParam("id") String id
-);
+            @PathVariable("id") String id
+    );
 
     /**
      * 取消点赞
      */
-    @Path("/notes/{id}/unlike")
-    @POST
+    @PostMapping("/{id}/unlike")
     Result<Void> unlikeNote(
-            @PathParam("id") String id
-);
+            @PathVariable("id") String id
+    );
 
     /**
      * 收藏笔记
      */
-    @POST
-    @Path("/notes/{id}/collect")
+    @PostMapping("/{id}/collect")
     Result<Void> collectNote(
-            @PathParam("id") String id
-);
+            @PathVariable("id") String id
+    );
 
     /**
      * 取消收藏
      */
-    @POST
-    @Path("/notes/{id}/uncollect")
+    @PostMapping("/{id}/uncollect")
     Result<Void> uncollectNote(
-            @PathParam("id") String id
-);
-} 
+            @PathVariable("id") String id
+    );
+}

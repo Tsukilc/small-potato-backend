@@ -1,8 +1,6 @@
 package org.tsukilc.userservice.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +9,6 @@ import org.tsukilc.api.user.UserService;
 import org.tsukilc.api.user.dto.LoginRequest;
 import org.tsukilc.api.user.dto.RegisterRequest;
 import org.tsukilc.api.user.dto.UserDTO;
-import org.tsukilc.common.core.PageResult;
 import org.tsukilc.common.core.Result;
 import org.tsukilc.common.exception.BusinessException;
 import org.tsukilc.userservice.entity.User;
