@@ -1,16 +1,19 @@
 package org.tsukilc.userservice.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.tsukilc.api.auth.AuthService;
 import org.tsukilc.api.user.UserService;
 import org.tsukilc.api.user.dto.LoginRequest;
 import org.tsukilc.api.user.dto.RegisterRequest;
 import org.tsukilc.api.user.dto.UserDTO;
 import org.tsukilc.common.core.Result;
 import org.tsukilc.common.exception.BusinessException;
+import org.tsukilc.common.util.UserDetail;
 import org.tsukilc.userservice.entity.User;
 import org.tsukilc.userservice.entity.UserFollow;
 import org.tsukilc.userservice.mapper.UserFollowMapper;
@@ -28,20 +31,15 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserFollowMapper userFollowMapper;
+
+    @DubboReference
+    private AuthService authService;
     
     // 模拟生成token，实际应当使用JWT等方式
     private String generateToken(String userId) {
-        return "mock_token_" + userId + "_" + System.currentTimeMillis();
+        return authService.generateToken(userId);
     }
-    
-    // 模拟从token获取用户ID
-    private String getUserIdFromToken(String token) {
-        // 假设token格式为 "mock_token_userId_timestamp"
-        if (token == null || !token.startsWith("mock_token_")) {
-            throw new BusinessException(401, "无效的token");
-        }
-        return token.split("_")[2];
-    }
+
     
     @Override
     public Result<UserDTO> login(LoginRequest request) {
@@ -161,7 +159,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Void> followUser(String userId) {
         try {
-            String currentUserId = getUserIdFromToken(generateToken(userId));
+            String currentUserId = UserDetail.getUserId();
             
             // 检查目标用户是否存在
             User targetUser = userMapper.selectById(userId);
@@ -202,7 +200,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Void> unfollowUser(String userId) {
         try {
-            String currentUserId = getUserIdFromToken(userId);
+            String currentUserId = UserDetail.getUserId();
             
             // 删除关注记录
             LambdaQueryWrapper<UserFollow> queryWrapper = new LambdaQueryWrapper<>();

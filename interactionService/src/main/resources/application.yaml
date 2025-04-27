@@ -9,6 +9,7 @@ dubbo:
   protocol:
     port: 20884
     name: tri
+
   consumer:
     check: false
 

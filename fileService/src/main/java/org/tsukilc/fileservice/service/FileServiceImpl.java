@@ -127,6 +127,9 @@ public class FileServiceImpl implements FileService {
     
     @Override
     public Result<String> getFileAccessUrl(String filePath) {
+
+        UserDetail.getUserId();
+
         try {
             if (filePath == null || filePath.trim().isEmpty()) {
                 return Result.fail("文件路径不能为空");

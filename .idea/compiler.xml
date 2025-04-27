@@ -13,6 +13,7 @@
         <module name="searchService" />
         <module name="fileService" />
         <module name="interface" />
+        <module name="authService" />
         <module name="userService" />
       </profile>
     </annotationProcessing>
@@ -22,6 +23,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="authService" options="-parameters" />
       <module name="common" options="-parameters" />
       <module name="fileService" options="-parameters" />
       <module name="interactionService" options="-parameters" />

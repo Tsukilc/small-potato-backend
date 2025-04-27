@@ -124,6 +124,9 @@ public class NoteServiceImpl implements NoteService {
     @Override
     @Transactional
     public Result<NoteDTO> createNote(CreateNoteRequest request) {
+
+        fileServiceClient.getFileAccessUrl("");
+
         // 校验请求参数
         if (request == null) {
             return Result.fail("请求参数不能为空");
