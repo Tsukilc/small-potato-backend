@@ -105,6 +105,28 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
+    public Result<List<String>> getHotTags(Integer limit) {
+        // 设置默认限制数量
+        if (limit == null || limit <= 0) {
+            limit = 10;
+        }
+
+        // 根据使用次数查询热门标签
+        LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Tag::getUseCount)
+                .last("LIMIT " + limit);
+
+        List<Tag> hotTags = tagMapper.selectList(queryWrapper);
+
+        // 提取标签名称
+        List<String> tagNames = hotTags.stream()
+                .map(Tag::getName)
+                .collect(Collectors.toList());
+
+        return Result.success(tagNames);
+    }
+
+    @Override
     public Result<NoteDTO> getNoteDetail(String id) {
         if (!StringUtils.hasText(id)) {
             return Result.fail("笔记ID不能为空");

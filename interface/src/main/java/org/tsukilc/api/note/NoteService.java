@@ -6,6 +6,8 @@ import org.tsukilc.api.note.dto.NoteDTO;
 import org.tsukilc.common.core.PageResult;
 import org.tsukilc.common.core.Result;
 
+import java.util.List;
+
 @RequestMapping("/api/notes")
 public interface NoteService {
 
@@ -28,12 +30,22 @@ public interface NoteService {
             @PathVariable("getId") String id);
 
     /**
+     * 获取热门标签
+     * @param limit 返回标签的数量限制，默认为10
+     * @return 热门标签列表
+     */
+    @GetMapping("/hot-tags")
+    Result<List<String>> getHotTags(
+            @RequestParam(value = "limit", required = false) Integer limit);
+
+    /**
      * 创建笔记
      */
     @PostMapping("")
     Result<NoteDTO> createNote(
             @RequestBody CreateNoteRequest request
     );
+
 
     /**
      * 删除笔记
