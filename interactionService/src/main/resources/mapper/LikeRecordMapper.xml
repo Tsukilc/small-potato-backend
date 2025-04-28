@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.tsukilc.interactionservice.mapper.LikeRecordMapper">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id, target_id, type, status, create_time, update_time
+    </sql>
+
+    <!-- 查询用户的点赞列表 -->
+    <select id="selectUserLikeList" resultType="org.tsukilc.interactionservice.entity.LikeRecord">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM like_record
+        WHERE user_id = #{userId}
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        AND status = 1
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 批量插入点赞记录 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO like_record (user_id, target_id, type, status, create_time, update_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.targetId}, #{item.type}, #{item.status}, 
+             #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+</mapper> 

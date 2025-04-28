@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.tsukilc.interactionservice.mapper.LikeCountMapper">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, target_id, type, count, create_time, update_time
+    </sql>
+
+    <!-- 增加点赞数 -->
+    <update id="incrementCount">
+        INSERT INTO like_count (target_id, type, count, create_time, update_time)
+        VALUES (#{targetId}, #{type}, #{step}, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+            count = count + #{step},
+            update_time = NOW()
+    </update>
+    
+    <!-- 批量获取点赞数 -->
+    <select id="batchGetLikeCount" resultType="java.util.Map">
+        SELECT target_id, count
+        FROM like_count
+        WHERE target_id IN
+        <foreach collection="targetIds" item="targetId" open="(" separator="," close=")">
+            #{targetId}
+        </foreach>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+    </select>
+    
+    <!-- 获取用户所有笔记的总点赞数 -->
+    <select id="getUserTotalLikeCount" resultType="java.lang.Long">
+        SELECT IFNULL(SUM(lc.count), 0)
+        FROM like_count lc
+        JOIN note n ON lc.target_id = n.id AND lc.type = 1
+        WHERE n.user_id = #{userId}
+    </select>
+</mapper> 
