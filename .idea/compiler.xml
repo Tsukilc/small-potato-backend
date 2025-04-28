@@ -8,9 +8,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="noteService" />
-        <module name="interactionService" />
         <module name="common" />
         <module name="searchService" />
+        <module name="likeService" />
         <module name="fileService" />
         <module name="interface" />
         <module name="authService" />
@@ -26,8 +26,8 @@
       <module name="authService" options="-parameters" />
       <module name="common" options="-parameters" />
       <module name="fileService" options="-parameters" />
-      <module name="interactionService" options="-parameters" />
       <module name="interface" options="-parameters" />
+      <module name="likeService" options="-parameters" />
       <module name="noteService" options="-parameters" />
       <module name="searchService" options="-parameters" />
       <module name="shop" options="" />

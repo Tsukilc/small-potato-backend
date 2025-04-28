@@ -11,7 +11,7 @@
         <module>userService</module>
         <module>interface</module>
         <module>noteService</module>
-        <module>interactionService</module>
+        <module>likeService</module>
         <module>searchService</module>
         <module>fileService</module>
         <module>common</module>

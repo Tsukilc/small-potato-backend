@@ -20,6 +20,10 @@ public interface CacheService {
      * 设置缓存并设置过期时间
      */
     void set(String key, Object value, long timeout, TimeUnit unit);
+
+    public List<String> lRange(String key, long start, long end);
+
+    public Map<String, String> GetAll(String key);
     
     /**
      * 获取缓存
@@ -75,4 +79,14 @@ public interface CacheService {
      * 批量获取缓存
      */
     <T> List<T> multiGet(List<String> keys, Class<T> clazz);
-} 
+    
+    /**
+     * 将值推入列表的左侧
+     */
+    Long lPush(String key, Object value);
+    
+    /**
+     * 在哈希表中指定字段的值增加指定增量
+     */
+    Long hIncrBy(String key, String field, long delta);
+}

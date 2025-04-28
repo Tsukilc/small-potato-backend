@@ -107,4 +107,36 @@ public class RedisCacheServiceImpl implements CacheService {
                 .map(obj -> obj != null ? (T) obj : null)
                 .collect(Collectors.toList());
     }
-} 
+
+    @Override
+    public Map<String, String> GetAll(String key) {
+        return redisTemplate.opsForHash().entries(key)
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().toString(),
+                        entry -> entry.getValue() != null ? entry.getValue().toString() : null
+                ));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<String> lRange(String key, long start, long end) {
+        List<Object> objects = redisTemplate.opsForList().range(key, start, end);
+        if (objects == null) {
+            return new ArrayList<>();
+        }
+        return objects.stream()
+                .map(obj -> obj != null ? obj.toString() : null)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Long lPush(String key, Object value) {
+        return redisTemplate.opsForList().leftPush(key, value);
+    }
+
+    @Override
+    public Long hIncrBy(String key, String field, long delta) {
+        return redisTemplate.opsForHash().increment(key, field, delta);
+    }
+}

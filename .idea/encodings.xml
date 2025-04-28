@@ -7,10 +7,10 @@
     <file url="file://$PROJECT_DIR$/common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/fileService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/fileService/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/interactionService/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/interactionService/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/interface/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/interface/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/likeService/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/likeService/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/noteService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/noteService/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/searchService/src/main/java" charset="UTF-8" />
