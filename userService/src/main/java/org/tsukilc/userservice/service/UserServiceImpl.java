@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<UserDTO> getCurrentUser() {
         try {
-            String userId = "1";
+            String userId = UserDetail.getUserId();
             User user = userMapper.selectById(userId);
             if (user == null) {
                 return Result.error(404, "用户不存在");
