@@ -1,5 +1,6 @@
 package org.tsukilc.authservice.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +18,14 @@ public class AuthController {
 
     private final AuthServiceImpl authService;
 
-//    @PostMapping("/api/auth/access")
-//    public Result<AccessResponse> accessCheck(@RequestHeader("Authorization") String token,HttpServletResponse response) {
-//        Result<AccessResponse> result = authService.accessCheck(token);
-//        if(!result.isSuccess()){
-//            // 设置http响应401
-//            response.setStatus(401);
-//        }
-//        return result;
-//    }
+    @PostMapping("/api/auth/access")
+    public Result<AccessResponse> accessCheck(@RequestHeader(value = "Authorization",required = false) String token, HttpServletRequest req,HttpServletResponse response) {
+        Result<AccessResponse> result = authService.accessCheck(token,req,response);
+        if(!result.isSuccess()){
+            // 设置http响应401
+            response.setStatus(401);
+        }
+        return result;
+    }
 
 }

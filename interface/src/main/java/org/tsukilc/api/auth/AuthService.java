@@ -1,5 +1,7 @@
 package org.tsukilc.api.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,10 +12,9 @@ import org.tsukilc.common.core.Result;
 public interface AuthService {
 
    /**
-    * 验证访问令牌并返回用户信息
+    * 验证访问令牌并返回用户信息，http
     */
-   @PostMapping("/access")
-   Result<AccessResponse> accessCheck(@RequestHeader(value = "Authorization",required = false) String token);
+   Result<AccessResponse> accessCheck(String token, HttpServletRequest req, HttpServletResponse resp);
    
    /**
     * 生成JWT令牌

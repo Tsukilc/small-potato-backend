@@ -1,10 +1,9 @@
 package org.tsukilc.authservice.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.remoting.http12.HttpRequest;
-import org.apache.dubbo.remoting.http12.HttpResponse;
-import org.apache.dubbo.rpc.RpcContext;
 import org.springframework.stereotype.Service;
 import org.tsukilc.api.auth.AuthService;
 import org.tsukilc.api.auth.dto.AccessResponse;
@@ -18,12 +17,20 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtUtil jwtUtil;
 
+    /**
+     * http
+     * @param token
+     * @return
+     */
     @Override
-    public Result<AccessResponse> accessCheck(String token) {
+    public Result<AccessResponse> accessCheck(String token, HttpServletRequest req,HttpServletResponse resp) {
 
-        HttpRequest request = (HttpRequest) RpcContext.getContext().getRequest();
-        HttpResponse httpResponse = (HttpResponse) RpcContext.getContext().getResponse();
-        String path = request.header("X-Forwarded-Uri");
+        String path = req.getHeader("X-Forwarded-Uri");
+
+        if(path == null){
+            // todo:全局异常处理
+            return Result.error(401, "X-Forwarded-Uri is null");
+        }
 
         // 登录注册放 todo:后续要上casbin，satoken
         if (path.contains("login") || path.contains("register")) {
@@ -32,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证令牌
         if (!jwtUtil.validateToken(token)) {
-            httpResponse.setStatus(401);
+            resp.setStatus(401);
             return Result.error(401, "无效的令牌");
         }
         
@@ -42,8 +49,8 @@ public class AuthServiceImpl implements AuthService {
         // 生成新的令牌（刷新令牌）
         String newToken = jwtUtil.generateToken(userId);
 
-        httpResponse.setHeader("x-user-id", userId);
-        
+        resp.setHeader("x-user-id", userId);
+
         // 构建响应
         AccessResponse response = AccessResponse.builder()
                 .userId(userId)

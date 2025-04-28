@@ -9,7 +9,13 @@ dubbo:
   protocol:
     port: 20883
     name: tri
-
+    triple:
+      rest:
+        cors:
+          allowed-origins: "*"
+          allowed-methods: "*"
+          allowed-headers: "*"
+          allow-credentials: false
   consumer:
     check: false
 

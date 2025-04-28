@@ -98,7 +98,7 @@ public class FileServiceImpl implements FileService {
             if (params.getFileUrl() == null) {
                 return Result.fail("文件路径或URL不能为空");
             }
-            
+
             // 创建文件信息记录
             FileInfo fileInfo = new FileInfo();
             fileInfo.setOriginalName(params.getOriginalFileName());
@@ -111,7 +111,6 @@ public class FileServiceImpl implements FileService {
             fileInfo.setFileType(params.getCategory());
             fileInfo.setExtension(extractExtension(params.getOriginalFileName()));
             fileInfo.setCreatedAt(LocalDateTime.now());
-            
             // 保存文件信息到数据库
             fileInfoMapper.insert(fileInfo);
             
